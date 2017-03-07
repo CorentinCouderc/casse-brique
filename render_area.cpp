@@ -13,9 +13,10 @@ render_area::render_area(QWidget *parent)
       damping(0.0),
       bounce_coeff(1.0),
       score(nullptr),
-      circ({200,150},5),
+      circ({350,330},5),
       speed(0.0f,0.0f),
       dt(1/5.0f),
+      bricks({0,0},30,10),
       stored_motion(),
       stored_time(),
       click_previous(),
@@ -41,8 +42,8 @@ void render_area::paintEvent(QPaintEvent*)
     painter.setRenderHint(QPainter::Antialiasing, true);
 
     QPen pen;
-    pen.setWidth(0.5);
-    pen.setColor(Qt::gray);
+    pen.setWidth(0.2);
+    pen.setColor(Qt::black);
     painter.setPen(pen);
 
     QBrush brush = painter.brush();
@@ -54,6 +55,13 @@ void render_area::paintEvent(QPaintEvent*)
     vec2 const& p=circ.center;
     float const r=circ.radius;
     painter.drawEllipse(p.x-r,p.y-r,2*r,2*r);
+
+    //the actual drawing of the bricks
+    vec2 const& pos=bricks.position;
+    float const w=bricks.width;
+    float const h=bricks.height;
+    painter.drawRect(pos.x,pos.y,w,h);
+    painter.drawRect(pos.x+w,pos.y,w,h);
 }
 
 

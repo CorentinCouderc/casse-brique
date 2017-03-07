@@ -4,6 +4,7 @@
 #define RENDER_AREA_HPP
 
 #include "circle.hpp"
+#include "brick.hpp"
 
 #include <QWidget>
 #include <QTimer>
@@ -66,6 +67,9 @@ private: //attributes
     vec2 speed;
     /** The time integration step */
     float dt;
+
+    /** The bricks */
+    brick bricks;
 
     /** A vector of previous position when the circle is grabbed */
     std::list<vec2> stored_motion;
