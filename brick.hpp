@@ -20,7 +20,7 @@ struct brick
 
     /** Constructor brick(0,0) */
     brick();
-    /** Constructor brick(w,h) */
+    /** Constructor brick(x,y,w,h) */
     brick(float pos_x, float pos_y, float width, float height);
 
 };
