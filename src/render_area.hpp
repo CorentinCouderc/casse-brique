@@ -5,6 +5,7 @@
 
 #include "circle.hpp"
 #include "brick.hpp"
+#include "paddle.hpp"
 
 #include <QWidget>
 #include <QTimer>
@@ -33,6 +34,7 @@ protected:
     void paintEvent(QPaintEvent *event);
     /** Function called when the mouse is moved */
     void mouseMoveEvent(QMouseEvent *event);
+
 
 private slots:
 
@@ -70,6 +72,9 @@ private: //attributes
 
     /** The bricks */
     brick bricks;
+
+    /** The paddle */
+    paddle pad;
 
     /** A vector of previous position when the circle is grabbed */
     std::list<vec2> stored_motion;

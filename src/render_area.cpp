@@ -13,13 +13,14 @@ render_area::render_area(QWidget *parent)
       damping(0.0),
       bounce_coeff(1.0),
       score(nullptr),
-      circ({350,330},5),
+      circ({350,130},5),
       speed(0.0f,0.0f),
       dt(1/5.0f),
       bricks({0,0},30,10),
+      pad({300,350},100,5),
       stored_motion(),
       stored_time(),
-      click_previous(),
+      click_previous(pad.position),
       timer(),
       time()
 {
@@ -42,7 +43,7 @@ void render_area::paintEvent(QPaintEvent*)
     painter.setRenderHint(QPainter::Antialiasing, true);
 
     QPen pen;
-    pen.setWidth(0.2);
+    pen.setWidth((double) 0.2);
     pen.setColor(Qt::black);
     painter.setPen(pen);
 
@@ -62,28 +63,32 @@ void render_area::paintEvent(QPaintEvent*)
     float const h=bricks.height;
     painter.drawRect(pos.x,pos.y,w,h);
     painter.drawRect(pos.x+w,pos.y,w,h);
+
+    //the actual drawing of the pad
+    vec2 const& pos_pad=pad.position;
+    float const w_pad=pad.width;
+    float const h_pad=pad.height;
+    painter.drawRect(pos_pad.x,pos_pad.y,w_pad,h_pad);
 }
-
-
 
 
 
 void render_area::mouseMoveEvent(QMouseEvent *event)
 {
-    /*
+
     //compute the current translation of the mouse
     vec2 const click=vec2(event->x(),event->y());
     vec2 const translate=click-click_previous;
 
     //translate the center of the circle
-    circ.center+=translate;
+    pad.position.x+=translate.x;
 
     //store previous values
     click_previous=click;
     store_values(click);
 
     repaint();
-    */
+
 }
 
 void render_area::store_values(vec2 const& click)
@@ -130,6 +135,7 @@ void render_area::numerical_integration()
 vec2 render_area::collision_handling(vec2& p)
 {
     vec2 new_speed=speed;
+    int score_value=score->text().toInt();
 
     //size of the window
     float const h=height();
@@ -174,14 +180,18 @@ vec2 render_area::collision_handling(vec2& p)
         collision_wall=true;
     }
 
-    //decrease speed with respect to the bouncing coefficient
-    if(collision)
-        new_speed *= 0.0;
+    //collision with the pad
+    if(p.y-r>(pad.position.y) && p.x<(pad.position.x+pad.width) && p.x>(pad.position.x))
+    {
+        p.y=pad.position.y-r;
+        new_speed.y *= -1;
+        collision=true;
+    }
+
 
     if(collision_wall && score!=nullptr)
     {
         //increase the information of the number of bounces
-        int score_value=score->text().toInt();
         score_value++;
         score->setText(QString::number(score_value));
     }
