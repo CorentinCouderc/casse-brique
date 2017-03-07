@@ -15,7 +15,7 @@ window::window(QWidget *parent)
 
     //Connection with signals
     connect(ui->quit,SIGNAL(clicked()),this,SLOT(action_quit()));
-
+    connect(ui->retry,SIGNAL(clicked()),this,SLOT(action_retry()));
 }
 
 
@@ -25,4 +25,9 @@ window::~window()
 void window::action_quit()
 {
     close();
+}
+
+void window::action_retry()
+{
+    render->reset();
 }

@@ -28,6 +28,7 @@ public:
 
     /** Pass the pointer of the label for the score */
     void setup_score(QLabel* score_param);
+    void reset();
 
 protected:
     /** Actual drawing function */

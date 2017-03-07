@@ -9,7 +9,7 @@
 #include <cassert>
 
 render_area::render_area(QWidget *parent)
-    :QWidget(parent),
+      :QWidget(parent),
       damping(0.0),
       bounce_coeff(1.0),
       score(nullptr),
@@ -25,7 +25,6 @@ render_area::render_area(QWidget *parent)
 {
     setBackgroundRole(QPalette::Base);
     setAutoFillBackground(true);
-
     //timer calling the function update_timer periodicaly
     connect(&timer, SIGNAL(timeout()), this, SLOT(update_timer()));
     timer.start(30); //every 30ms
@@ -33,7 +32,6 @@ render_area::render_area(QWidget *parent)
 
 render_area::~render_area()
 {}
-
 
 
 void render_area::paintEvent(QPaintEvent*)
@@ -85,9 +83,7 @@ void render_area::mouseMoveEvent(QMouseEvent *event)
         //translate the x coordonate of the paddle
         pad.position.x=mousePosition.x();
 
-
     repaint();
-
 }
 
 void render_area::store_values(vec2 const& click)
@@ -105,7 +101,6 @@ void render_area::store_values(vec2 const& click)
     if( stored_time.size()>N_last_position )
         stored_time.pop_front();
 }
-
 
 
 
@@ -178,7 +173,7 @@ vec2 render_area::collision_handling(vec2& p)
         collision_wall=true;
     }
 
-    //collision with the pad
+    //collision with the paddle
     if(p.y-r>(pad.position.y) && p.y<height() && p.x<(pad.position.x+pad.width) && p.x>(pad.position.x))
     {
         p.y=pad.position.y-r;
@@ -199,9 +194,15 @@ vec2 render_area::collision_handling(vec2& p)
 
 }
 
-
-
 void render_area::setup_score(QLabel* score_value)
 {
     score=score_value;
+}
+
+void render_area::reset()
+{
+    score->setText(QString::number(0));
+    pad.position={300,350};
+    circ.center={350,130};
+    repaint();
 }

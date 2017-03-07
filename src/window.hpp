@@ -24,6 +24,8 @@ public:
 private slots:
 
     void action_quit();
+    void action_retry();
+
 
 private:
 

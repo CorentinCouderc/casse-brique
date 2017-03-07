@@ -29,6 +29,7 @@ class Ui_MainWindow
 public:
     QWidget *centralwidget;
     QPushButton *quit;
+    QPushButton *retry;
     QWidget *verticalLayoutWidget;
     QVBoxLayout *layout_scene;
     QWidget *gridLayoutWidget;
@@ -46,9 +47,17 @@ public:
         MainWindow->resize(800, 500);
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QStringLiteral("centralwidget"));
+
+        //Quit Button
         quit = new QPushButton(centralwidget);
         quit->setObjectName(QStringLiteral("quit"));
         quit->setGeometry(QRect(670, 430, 92, 27));
+
+        // Retry Button
+        retry = new QPushButton(centralwidget);
+        retry->setObjectName(QStringLiteral("quit"));
+        retry->setGeometry(QRect(45, 430, 92, 27));
+
         verticalLayoutWidget = new QWidget(centralwidget);
         verticalLayoutWidget->setObjectName(QStringLiteral("verticalLayoutWidget"));
         verticalLayoutWidget->setGeometry(QRect(40, 20, 721, 381));
@@ -85,6 +94,7 @@ public:
     {
         MainWindow->setWindowTitle(QApplication::translate("MainWindow", "Casse Brique", 0));
         quit->setText(QApplication::translate("MainWindow", "Quit", 0));
+        retry->setText(QApplication::translate("MainWindow", "Retry", 0));
         label_score->setText(QApplication::translate("MainWindow", "Score :", 0));
         score_value->setText(QApplication::translate("MainWindow", "0", 0));
     } // retranslateUi
