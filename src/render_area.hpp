@@ -80,8 +80,6 @@ private: //attributes
     std::list<vec2> stored_motion;
     /** A vector of previous time when the circle is grabbed */
     std::list<int> stored_time;
-    /** The position of the previous click */
-    vec2 click_previous;
 
 
 

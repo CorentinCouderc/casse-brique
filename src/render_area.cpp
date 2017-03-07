@@ -20,7 +20,6 @@ render_area::render_area(QWidget *parent)
       pad({300,350},100,5),
       stored_motion(),
       stored_time(),
-      click_previous(pad.position),
       timer(),
       time()
 {
@@ -69,6 +68,9 @@ void render_area::paintEvent(QPaintEvent*)
     float const w_pad=pad.width;
     float const h_pad=pad.height;
     painter.drawRect(pos_pad.x,pos_pad.y,w_pad,h_pad);
+
+    // Mouse detection
+    this->setMouseTracking(true);
 }
 
 
@@ -76,16 +78,13 @@ void render_area::paintEvent(QPaintEvent*)
 void render_area::mouseMoveEvent(QMouseEvent *event)
 {
 
-    //compute the current translation of the mouse
-    vec2 const click=vec2(event->x(),event->y());
-    vec2 const translate=click-click_previous;
+    this->setMouseTracking(true);
+    QPoint mousePosition = event->pos();
 
-    //translate the center of the circle
-    pad.position.x+=translate.x;
+    if (mousePosition.x()>0 && mousePosition.x()+pad.width<width())
+        //translate the x coordonate of the paddle
+        pad.position.x=mousePosition.x();
 
-    //store previous values
-    click_previous=click;
-    store_values(click);
 
     repaint();
 
@@ -151,8 +150,7 @@ vec2 render_area::collision_handling(vec2& p)
     //collision with the ground
     if(p.y+r>h)
     {
-        p.y=h-r;
-        new_speed.y *= -1;
+        new_speed.y *= 0;
         collision=true;
     }
     //collision with the left wall
@@ -181,7 +179,7 @@ vec2 render_area::collision_handling(vec2& p)
     }
 
     //collision with the pad
-    if(p.y-r>(pad.position.y) && p.x<(pad.position.x+pad.width) && p.x>(pad.position.x))
+    if(p.y-r>(pad.position.y) && p.y<height() && p.x<(pad.position.x+pad.width) && p.x>(pad.position.x))
     {
         p.y=pad.position.y-r;
         new_speed.y *= -1;
