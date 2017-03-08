@@ -21,6 +21,7 @@ struct paddle
 
     /** Constructor paddle({0,0},0,0) */
     paddle();
+
     /** Constructor paddle({x,y},w,h) */
     paddle(vec2 position, int width, int height);
 
