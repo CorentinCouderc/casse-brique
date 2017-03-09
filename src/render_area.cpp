@@ -13,7 +13,7 @@ render_area::render_area(QWidget *parent)
       damping(0.0),
       bounce_coeff(1.0),
       score(nullptr),
-      circ({350,130},5),
+      circ({350,340},5),
       speed(0.0f,0.0f),
       dt(1/5.0f),
       bricks({0,0},30,10),
@@ -27,7 +27,8 @@ render_area::render_area(QWidget *parent)
     setAutoFillBackground(true);
     //timer calling the function update_timer periodicaly
     connect(&timer, SIGNAL(timeout()), this, SLOT(update_timer()));
-    timer.start(30); //every 30ms
+
+    //timer.start(30); //every 30ms
 }
 
 render_area::~render_area()
@@ -76,14 +77,25 @@ void render_area::paintEvent(QPaintEvent*)
 void render_area::mouseMoveEvent(QMouseEvent *event)
 {
 
-    this->setMouseTracking(true);
     QPoint mousePosition = event->pos();
 
-    if (mousePosition.x()>0 && mousePosition.x()+pad.width<width())
+    if (mousePosition.x()>pad.width/2 && mousePosition.x()+pad.width/2<width())
         //translate the x coordonate of the paddle
-        pad.position.x=mousePosition.x();
+        pad.position.x=mousePosition.x()-pad.width/2;
 
     repaint();
+}
+
+void render_area::mousePressEvent(QMouseEvent *event)
+{
+    if(start)
+    {
+        start=false;
+        timer.start(30); //every 30ms
+        speed.x=0.0;
+        speed.y=-85.0;
+        repaint();
+    }
 }
 
 void render_area::store_values(vec2 const& click)
@@ -167,6 +179,7 @@ vec2 render_area::collision_handling(vec2& p)
     //collision with the top wall
     if(p.y-r<0)
     {
+        if(new_speed.x==0.0) new_speed.x=25.0;
         p.y=r;
         new_speed.y *= -1;
         collision=true;
@@ -178,6 +191,18 @@ vec2 render_area::collision_handling(vec2& p)
     {
         p.y=pad.position.y-r;
         new_speed.y *= -1;
+
+        if(p.x<pad.position.x+3*pad.width/7) // if the ball touches the left part of the paddle
+          {
+            if (new_speed.x>0) // and comes from the left, it returns left
+                new_speed.x*=-1;
+          }
+        else if(p.x>pad.position.x+5*pad.width/7) // if the ball touches the right part of the paddle
+        {
+          if (new_speed.x<0) // and comes from the right, it returns right
+              new_speed.x*=-1;
+        }
+
         collision=true;
     }
 
@@ -202,7 +227,9 @@ void render_area::setup_score(QLabel* score_value)
 void render_area::reset()
 {
     score->setText(QString::number(0));
-    pad.position={300,350};
-    circ.center={350,130};
+    pad.position=pad_init;
+    circ.center=circ_init;
+    timer.stop();
+    start=true;
     repaint();
 }

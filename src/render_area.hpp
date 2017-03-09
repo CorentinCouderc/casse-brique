@@ -36,6 +36,8 @@ protected:
     /** Function called when the mouse is moved */
     void mouseMoveEvent(QMouseEvent *event);
 
+    void mousePressEvent(QMouseEvent *event);
+
 
 private slots:
 
@@ -66,8 +68,11 @@ private: //attributes
 
     /** The circle */
     circle circ;
+    vec2 circ_init={350,340};
+
     /** The speed of the circle */
     vec2 speed;
+
     /** The time integration step */
     float dt;
 
@@ -76,6 +81,7 @@ private: //attributes
 
     /** The paddle */
     paddle pad;
+    vec2 pad_init={300,350};
 
     /** A vector of previous position when the circle is grabbed */
     std::list<vec2> stored_motion;
@@ -88,6 +94,9 @@ private: //attributes
     QTimer timer;
     /** Time accessor */
     QTime time;
+
+    // true if it's the beginnig of the game
+    bool start=true;
 
 };
 
