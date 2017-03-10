@@ -82,6 +82,8 @@ void render_area::mouseMoveEvent(QMouseEvent *event)
     if (mousePosition.x()>pad.width/2 && mousePosition.x()+pad.width/2<width())
         //translate the x coordonate of the paddle
         pad.position.x=mousePosition.x()-pad.width/2;
+        if(start)
+            circ.center.x=mousePosition.x();
 
     repaint();
 }
@@ -93,7 +95,7 @@ void render_area::mousePressEvent(QMouseEvent *event)
         start=false;
         timer.start(30); //every 30ms
         speed.x=0.0;
-        speed.y=-85.0;
+        speed.y=-75.0;
         repaint();
     }
 }
@@ -127,7 +129,7 @@ void render_area::update_timer()
 void render_area::numerical_integration()
 {
     //numerical integration using Forward Euler method
-    vec2 const gravity={0.0f,9.81f};
+    vec2 const gravity={0.0f,0.0f};
     vec2& p=circ.center;
 
     speed  = speed+dt*gravity;  //integrate speed
