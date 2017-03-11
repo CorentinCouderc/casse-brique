@@ -5,6 +5,8 @@
 
 #include <iostream>
 #include "vec2.hpp"
+#include "bonus.hpp"
+
 
 /** A structure containing parameter of a brick */
 struct brick
@@ -19,11 +21,14 @@ struct brick
     int breaking_number;
     /** state */
     bool is_broken;
+    /** bonus */
+    Bonus bonus;
+
 
     /** Constructor brick({0,0},0,0) */
     brick();
     /** Constructor brick({x,y},w,h) */
-    brick(vec2 const& position, int const width, int const height);
+    brick(vec2 const& position, int const width, int const height,Bonus const bonus);
 
 };
 
@@ -33,5 +38,8 @@ bool detect_contact();
 int decrement_breaking_number();
 /** Check if the brick is broken */
 bool is_brick_broken();
+
+
+
 
 #endif

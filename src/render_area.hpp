@@ -6,6 +6,7 @@
 #include "circle.hpp"
 #include "brick.hpp"
 #include "paddle.hpp"
+#include "bonus.hpp"
 
 #include <QWidget>
 #include <QTimer>
@@ -72,6 +73,8 @@ private: //attributes
 
     /** The speed of the circle */
     vec2 speed;
+    vec2 speed_init={0.0f,-50.0f};
+
 
     /** The time integration step */
     float dt;
@@ -81,7 +84,7 @@ private: //attributes
 
     /** The paddle */
     paddle pad;
-    vec2 pad_init={300,350};
+    paddle pad_init=paddle({300,350},100,5);
 
     /** A vector of previous position when the circle is grabbed */
     std::list<vec2> stored_motion;
@@ -97,6 +100,8 @@ private: //attributes
 
     // true if it's the beginnig of the game
     bool start=true;
+
+    bool bonus_enabled=true;
 
 };
 

@@ -16,7 +16,7 @@ render_area::render_area(QWidget *parent)
       circ({350,340},5),
       speed(0.0f,0.0f),
       dt(1/5.0f),
-      bricks({0,0},30,10),
+      bricks({0,0},30,10,largerPad),
       pad({300,350},100,5),
       stored_motion(),
       stored_time(),
@@ -28,7 +28,6 @@ render_area::render_area(QWidget *parent)
     //timer calling the function update_timer periodicaly
     connect(&timer, SIGNAL(timeout()), this, SLOT(update_timer()));
 
-    //timer.start(30); //every 30ms
 }
 
 render_area::~render_area()
@@ -94,8 +93,7 @@ void render_area::mousePressEvent(QMouseEvent *event)
     {
         start=false;
         timer.start(30); //every 30ms
-        speed.x=0.0;
-        speed.y=-75.0;
+        speed=speed_init;
         repaint();
     }
 }
@@ -115,8 +113,6 @@ void render_area::store_values(vec2 const& click)
     if( stored_time.size()>N_last_position )
         stored_time.pop_front();
 }
-
-
 
 void render_area::update_timer()
 {
@@ -159,7 +155,7 @@ vec2 render_area::collision_handling(vec2& p)
     //collision with the ground
     if(p.y+r>h)
     {
-        new_speed.y *= 0;
+        p.y=h+r;
         collision=true;
     }
     //collision with the left wall
@@ -186,6 +182,16 @@ vec2 render_area::collision_handling(vec2& p)
         new_speed.y *= -1;
         collision=true;
         collision_wall=true;
+        vec2 pre_bonus_speed=new_speed; // save of speed value before bonus
+        paddle pre_bonus_pad=pad; // save of pad parameters before bonus
+        if(bonus_enabled)
+            selectBonus(&pad,&new_speed,bricks.bonus);
+        bonus_enabled=false;
+        /*wait(1000);
+        new_speed=pre_bonus_speed;
+        pad=pre_bonus_pad;*/
+
+
     }
 
     //collision with the paddle
@@ -229,9 +235,12 @@ void render_area::setup_score(QLabel* score_value)
 void render_area::reset()
 {
     score->setText(QString::number(0));
-    pad.position=pad_init;
+    pad=pad_init;
     circ.center=circ_init;
+    speed=speed_init;
     timer.stop();
     start=true;
+    bonus_enabled=true;
+
     repaint();
 }

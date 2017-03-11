@@ -12,11 +12,11 @@ TARGET = src
 TEMPLATE = app
 
 
-SOURCES += *.cpp
+SOURCES += *.cpp \
 
 HEADERS  += *.hpp \
     ui_mainwindow.h \
-    introwindow.hpp
+
 
 FORMS    += mainwindow.ui \
     mainwindow.ui \
