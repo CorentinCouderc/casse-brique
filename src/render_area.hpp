@@ -80,7 +80,9 @@ private: //attributes
     float dt;
 
     /** The bricks */
-    brick bricks;
+    brick first_brick;
+    /** Brick Wall */
+    std::vector<brick> brick_wall;
 
     /** The paddle */
     paddle pad;

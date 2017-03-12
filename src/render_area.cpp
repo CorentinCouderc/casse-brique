@@ -16,8 +16,9 @@ render_area::render_area(QWidget *parent)
       circ({350,340},5),
       speed(0.0f,0.0f),
       dt(1/5.0f),
-      bricks({0,0},30,10,largerPad),
-      pad({300,350},100,5),
+      first_brick({0,30},60,20,none),
+      brick_wall(setBrickWall(first_brick)),
+      pad({300,350},100,10),
       stored_motion(),
       stored_time(),
       timer(),
@@ -54,14 +55,19 @@ void render_area::paintEvent(QPaintEvent*)
     float const r=circ.radius;
     painter.drawEllipse(p.x-r,p.y-r,2*r,2*r);
 
+
     //the actual drawing of the bricks
-    vec2 const& pos=bricks.position;
-    float const w=bricks.width;
-    float const h=bricks.height;
-    painter.drawRect(pos.x,pos.y,w,h);
-    painter.drawRect(pos.x+w,pos.y,w,h);
+    brush.setColor(Qt::red);
+    painter.setBrush(brush);
+    for (brick B:brick_wall)
+    {
+        painter.drawRect(B.position.x,B.position.y,B.width,B.height);
+    }
+
 
     //the actual drawing of the pad
+    brush.setColor(Qt::black);
+    painter.setBrush(brush);
     vec2 const& pos_pad=pad.position;
     float const w_pad=pad.width;
     float const h_pad=pad.height;
@@ -151,6 +157,7 @@ vec2 render_area::collision_handling(vec2& p)
     //special condition in cases of collision
     bool collision=false;
     bool collision_wall=false;
+    bool collision_brick=false;
 
     //collision with the ground
     if(p.y+r>h)
@@ -185,14 +192,63 @@ vec2 render_area::collision_handling(vec2& p)
         vec2 pre_bonus_speed=new_speed; // save of speed value before bonus
         paddle pre_bonus_pad=pad; // save of pad parameters before bonus
         if(bonus_enabled)
-            selectBonus(&pad,&new_speed,bricks.bonus);
+            selectBonus(&pad,&new_speed,first_brick.bonus);
         bonus_enabled=false;
         /*wait(1000);
         new_speed=pre_bonus_speed;
         pad=pre_bonus_pad;*/
-
-
     }
+
+    //collision with the bricks
+    for (brick B:brick_wall)
+    {
+        std::cout<<"depart :"<<p.x<<" , "<<p.y<<std::endl;
+        //collision with the left of the brick
+        if(p.x+r > B.position.x && (p.y+r > B.position.y && p.y-r < B.position.y+B.height))
+        {
+            p.x=B.position.x-r;
+            new_speed.x *= -1;
+            collision = true;
+            collision_brick = true;
+            std::cout<<"gauche"<<std::endl;
+        }
+
+        //collision with the right of the brick
+        if(p.x-r < B.position.x+B.width && (p.y+r > B.position.y && p.y-r < B.position.y+B.height))
+        {
+            p.x=B.position.x+B.width+r;
+            new_speed.x *= -1;
+            collision = true;
+            collision_brick = true;
+            std::cout<<"droite"<<std::endl;
+        }
+
+        /*
+        //collision with the bottom of the brick
+        if(p.y-r < B.position.y+B.height && (p.x+r > B.position.x && p.x-r < B.position.x+B.width))
+        {
+            std::cout<<"bas"<<std::endl;
+            std::cout<<p.y-r<<" , "<<B.position.y+B.height<<std::endl;
+            p.y=B.position.y+B.height+r;
+            new_speed.y *= -1;
+            collision = true;
+            collision_brick = true;
+
+        }
+
+        //collision with the top of the brick
+        if(p.y+r > B.position.y && (p.x+r > B.position.x && p.x-r < B.position.x+B.width))
+        {
+            p.y=B.position.y-r;
+            new_speed.y *= -1;
+            collision = true;
+            collision_brick = true;
+            std::cout<<"haut"<<!(p.x+r > B.position.x && p.x-r < B.position.x+B.width)<<std::endl;
+        }
+        */
+    }
+
+
 
     //collision with the paddle
     if(p.y-r>(pad.position.y) && p.y<height() && p.x<(pad.position.x+pad.width) && p.x>(pad.position.x))
@@ -215,10 +271,11 @@ vec2 render_area::collision_handling(vec2& p)
     }
 
 
-    if(collision_wall && score!=nullptr)
+    if(collision_brick && score!=nullptr)
     {
         //increase the information of the number of bounces
         score_value++;
+        collision_brick = false;
         score->setText(QString::number(score_value));
     }
 
