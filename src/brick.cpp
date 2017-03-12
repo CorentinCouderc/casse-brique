@@ -13,12 +13,13 @@ brick::brick(vec2 const& position_param,int const width_param,int const height_p
      breaking_number(1),
      is_broken(false),
      bonus(bonus_param)
+
 {}
 
 
-std::vector<brick> setBrickWall(brick first_brick)
+std::list<brick> setBrickWall(brick first_brick)
 {
-    std::vector<brick> brick_wall;
+    std::list<brick> brick_wall;
     float const pos_x=first_brick.position.x;
     float const pos_y=first_brick.position.y;
     int const w=first_brick.width;

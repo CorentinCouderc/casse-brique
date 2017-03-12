@@ -4,7 +4,7 @@
 #define BRICK_HPP
 
 #include <iostream>
-#include <vector>
+#include <list>
 #include "vec2.hpp"
 #include "bonus.hpp"
 
@@ -34,7 +34,7 @@ struct brick
 };
 
 /** Construct a vector of bricks from the first brick*/
-std::vector<brick> setBrickWall(brick first_brick);
+std::list<brick> setBrickWall(brick first_brick);
 /** Check if the brick is in contact with the ball */
 bool detect_contact();
 /** Decrease the breaking_number of the brick if hit by the ball */

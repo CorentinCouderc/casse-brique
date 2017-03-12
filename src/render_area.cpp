@@ -13,7 +13,7 @@ render_area::render_area(QWidget *parent)
       damping(0.0),
       bounce_coeff(1.0),
       score(nullptr),
-      circ({350,340},5),
+      circ({350,340},7),
       speed(0.0f,0.0f),
       dt(1/5.0f),
       first_brick({0,30},60,20,none),
@@ -59,9 +59,10 @@ void render_area::paintEvent(QPaintEvent*)
     //the actual drawing of the bricks
     brush.setColor(Qt::red);
     painter.setBrush(brush);
-    for (brick B:brick_wall)
+    for (B=brick_wall.begin();B!=brick_wall.end();B++)
     {
-        painter.drawRect(B.position.x,B.position.y,B.width,B.height);
+        if(!(B->is_broken))
+            painter.drawRect(B->position.x,B->position.y,B->width,B->height);
     }
 
 
@@ -159,6 +160,8 @@ vec2 render_area::collision_handling(vec2& p)
     bool collision_wall=false;
     bool collision_brick=false;
 
+    if( p.y+r<height() )
+    {
     //collision with the ground
     if(p.y+r>h)
     {
@@ -184,7 +187,8 @@ vec2 render_area::collision_handling(vec2& p)
     //collision with the top wall
     if(p.y-r<0)
     {
-        if(new_speed.x==0.0) new_speed.x=25.0;
+        if(new_speed.x==0.0) new_speed.x=-25.0;
+
         p.y=r;
         new_speed.y *= -1;
         collision=true;
@@ -200,58 +204,68 @@ vec2 render_area::collision_handling(vec2& p)
     }
 
     //collision with the bricks
-    for (brick B:brick_wall)
+
+    for (B=brick_wall.begin();B!=brick_wall.end();B++)
     {
-        std::cout<<"depart :"<<p.x<<" , "<<p.y<<std::endl;
-        //collision with the left of the brick
-        if(p.x+r > B.position.x && (p.y+r > B.position.y && p.y-r < B.position.y+B.height))
+        if( p.x >=B->position.x-5 && p.x <= B->position.x+B->width+5 )
         {
-            p.x=B.position.x-r;
-            new_speed.x *= -1;
-            collision = true;
-            collision_brick = true;
-            std::cout<<"gauche"<<std::endl;
+            //collision with the bottom of the brick
+            if(p.y-r <= B->position.y+B->height && p.y>B->position.y+B->height)
+            {
+                std::cout<<"bas"<<std::endl;
+
+                if(new_speed.x==0.0) new_speed.x=25.0;
+                p.y=B->position.y+B->height+r;
+                new_speed.y *= -1;
+                B->is_broken = true;
+                collision_brick = true;
+
+            }
+            //collision with the top of the brick
+            else if(p.y+r >= B->position.y && p.y<B->position.y)
+            {
+                p.y=B->position.y-r;
+                new_speed.y *= -1;
+                B->is_broken = true;
+                collision_brick = true;
+                std::cout<<"haut"<<std::endl;
+            }
         }
 
-        //collision with the right of the brick
-        if(p.x-r < B.position.x+B.width && (p.y+r > B.position.y && p.y-r < B.position.y+B.height))
+        if((p.y> B->position.y && p.y < B->position.y+B->height))
         {
-            p.x=B.position.x+B.width+r;
-            new_speed.x *= -1;
-            collision = true;
-            collision_brick = true;
-            std::cout<<"droite"<<std::endl;
+            //collision with the left of the brick
+            if(p.x+r > B->position.x && p.x<B->position.x+B->width)
+            {
+                p.x=B->position.x-r;
+                new_speed.x *= -1;
+                B->is_broken = true;
+                collision_brick = true;
+                std::cout<<"gauche"<<std::endl;
+            }
+
+            //collision with the right of the brick
+            else if(p.x-r < B->position.x+B->width && p.x>B->position.x)
+            {
+                p.x=B->position.x+B->width+r;
+                new_speed.x *= -1;
+                B->is_broken = true;
+                collision_brick = true;
+                std::cout<<"droite"<<std::endl;
+            }
         }
 
-        /*
-        //collision with the bottom of the brick
-        if(p.y-r < B.position.y+B.height && (p.x+r > B.position.x && p.x-r < B.position.x+B.width))
-        {
-            std::cout<<"bas"<<std::endl;
-            std::cout<<p.y-r<<" , "<<B.position.y+B.height<<std::endl;
-            p.y=B.position.y+B.height+r;
-            new_speed.y *= -1;
-            collision = true;
-            collision_brick = true;
-
-        }
-
-        //collision with the top of the brick
-        if(p.y+r > B.position.y && (p.x+r > B.position.x && p.x-r < B.position.x+B.width))
-        {
-            p.y=B.position.y-r;
-            new_speed.y *= -1;
-            collision = true;
-            collision_brick = true;
-            std::cout<<"haut"<<!(p.x+r > B.position.x && p.x-r < B.position.x+B.width)<<std::endl;
-        }
-        */
     }
 
+    for (B=brick_wall.begin();B!=brick_wall.end();B++)
+    {
+        if (B->is_broken)
+            brick_wall.erase(B);
 
+    }
 
     //collision with the paddle
-    if(p.y-r>(pad.position.y) && p.y<height() && p.x<(pad.position.x+pad.width) && p.x>(pad.position.x))
+    if(p.y+r>(pad.position.y) && p.y<height() && p.x<(pad.position.x+pad.width) && p.x>(pad.position.x))
     {
         p.y=pad.position.y-r;
         new_speed.y *= -1;
@@ -269,7 +283,7 @@ vec2 render_area::collision_handling(vec2& p)
 
         collision=true;
     }
-
+    }
 
     if(collision_brick && score!=nullptr)
     {
@@ -295,6 +309,7 @@ void render_area::reset()
     pad=pad_init;
     circ.center=circ_init;
     speed=speed_init;
+    brick_wall=setBrickWall(first_brick);
     timer.stop();
     start=true;
     bonus_enabled=true;

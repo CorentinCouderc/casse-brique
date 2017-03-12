@@ -73,7 +73,12 @@ private: //attributes
 
     /** The speed of the circle */
     vec2 speed;
-    vec2 speed_init={0.0f,-50.0f};
+    vec2 speed_init={0.0f,-35.0f};
+
+    /** The bonus represented by a circle*/
+    circle bonus_ball;
+    //bonus_ball.radius=3;
+
 
 
     /** The time integration step */
@@ -82,7 +87,8 @@ private: //attributes
     /** The bricks */
     brick first_brick;
     /** Brick Wall */
-    std::vector<brick> brick_wall;
+    std::list<brick> brick_wall;
+    std::list<brick>::iterator B;
 
     /** The paddle */
     paddle pad;
