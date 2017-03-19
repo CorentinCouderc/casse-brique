@@ -14,10 +14,12 @@ render_area::render_area(QWidget *parent)
       bounce_coeff(1.0),
       score(nullptr),
       circ({350,340},7),
-      speed(0.0f,0.0f),
+      ball_speed(0.0f,0.0f),
+      bonus_speed(0.0f,0.0f),
       dt(1/5.0f),
       first_brick({0,30},60,20,none),
       brick_wall(setBrickWall(first_brick)),
+      broken_bricks(),
       pad({300,350},100,10),
       stored_motion(),
       stored_time(),
@@ -46,18 +48,10 @@ void render_area::paintEvent(QPaintEvent*)
     painter.setPen(pen);
 
     QBrush brush = painter.brush();
-    brush.setColor(Qt::gray);
     brush.setStyle(Qt::SolidPattern);
-    painter.setBrush(brush);
-
-    //the actual drawing of the circle
-    vec2 const& p=circ.center;
-    float const r=circ.radius;
-    painter.drawEllipse(p.x-r,p.y-r,2*r,2*r);
-
 
     //the actual drawing of the bricks
-    brush.setColor(Qt::red);
+    brush.setColor(QColor(255,91,40,255));
     painter.setBrush(brush);
     for (B=brick_wall.begin();B!=brick_wall.end();B++)
     {
@@ -65,14 +59,47 @@ void render_area::paintEvent(QPaintEvent*)
             painter.drawRect(B->position.x,B->position.y,B->width,B->height);
     }
 
+    //the actual drawing of the bonus
+    for (B=broken_bricks.begin();B!=broken_bricks.end();B++)
+    {
+        if(B->is_broken && B->bonus != none)// if no bonus, no display
+        {
+            if(B->bonus == largerPad || B->bonus == slowerBall) // bonus in green
+            {
+                brush.setColor(QColor(20,255,50,255));
+                painter.setBrush(brush);
+                painter.drawRect(B->position.x+25,B->position.y+6,10,10);
+            }
+            if(B->bonus == shorterPad || B->bonus == fasterBall) //malus in red
+            {
+                brush.setColor(QColor(255,50,20,255));
+                painter.setBrush(brush);
+                painter.drawRect(B->position.x+25,B->position.y+6,10,10);
+            }
+        }
+    }
+
+
+    //the actual drawing of the ball
+    brush.setColor(Qt::gray);
+    painter.setBrush(brush);
+    vec2 const& p=circ.center;
+    float const r=circ.radius;
+    painter.drawEllipse(p.x-r,p.y-r,2*r,2*r);
+
 
     //the actual drawing of the pad
-    brush.setColor(Qt::black);
+    brush.setColor(QColor(10,10,10,255));
     painter.setBrush(brush);
     vec2 const& pos_pad=pad.position;
     float const w_pad=pad.width;
     float const h_pad=pad.height;
     painter.drawRect(pos_pad.x,pos_pad.y,w_pad,h_pad);
+
+
+    // The end of the game
+    if(score->text().toInt() >= 48)
+        painter.drawText(280,210,200,100,1," You finished the level!\nClick Retry to play again!");
 
     // Mouse detection
     this->setMouseTracking(true);
@@ -100,7 +127,8 @@ void render_area::mousePressEvent(QMouseEvent *event)
     {
         start=false;
         timer.start(30); //every 30ms
-        speed=speed_init;
+        ball_speed=speed_init;
+        bonus_speed=speed_init;
         repaint();
     }
 }
@@ -132,20 +160,40 @@ void render_area::update_timer()
 void render_area::numerical_integration()
 {
     //numerical integration using Forward Euler method
-    vec2 const gravity={0.0f,0.0f};
+    vec2 const gravity={0.0f,9.81f};
+    //the ball
     vec2& p=circ.center;
+    //the bonus
+    if (score->text().toInt() > 0 && score->text().toInt() < 48)
+    {
+        for (B=broken_bricks.begin();B!=broken_bricks.end();++B)
+        {
+            if (B->position.y < 400)
+            {
+                vec2& p2=B->position;
+                bonus_speed = bonus_speed+dt*gravity; //integrate speed
+                bonus_speed -= dt*damping*ball_speed; //apply damping
+                p2      = p2+dt*bonus_speed/100;  //integrate position
+            }
+        }
+    }
 
-    speed  = speed+dt*gravity;  //integrate speed
-    speed -= dt*damping*speed; //apply damping
-    p      = p+dt*speed;          //integrate position
+    if(score->text().toInt() >= 48)
+    {
+        ball_speed = {0.0f,0.0f};
+        circ.center.x = pad.position.x+pad.width/2;
+        circ.center.y = pad.position.y+pad.height/2;
+    }
+    ball_speed -= dt*damping*ball_speed; //apply damping
+    p      = p+dt*ball_speed;          //integrate position
 
     //collision handling (set new position, and return a new speed value)
-    speed=collision_handling(p);
+    ball_speed=collision_handling(p);
 }
 
 vec2 render_area::collision_handling(vec2& p)
 {
-    vec2 new_speed=speed;
+    vec2 new_speed=ball_speed;
     int score_value=score->text().toInt();
 
     //size of the window
@@ -159,6 +207,8 @@ vec2 render_area::collision_handling(vec2& p)
     bool collision=false;
     bool collision_wall=false;
     bool collision_brick=false;
+
+
 
     if( p.y+r<height() )
     {
@@ -224,12 +274,12 @@ vec2 render_area::collision_handling(vec2& p)
             collision_brick = true;
 
         }
-        if (B->is_broken)
-                {
-                    brick_wall.erase(B);
-                    break;
-                }
-
+        if (B->is_broken)  //if the brick is broken it is withdrawn from the list
+            {
+                broken_bricks.push_back(*B);
+                brick_wall.erase(B);
+                break;
+            }
 
     }
 
@@ -237,7 +287,7 @@ vec2 render_area::collision_handling(vec2& p)
     //collision with the paddle
     if(p.y+r>(pad.position.y) && p.y<height() && p.x<(pad.position.x+pad.width) && p.x>(pad.position.x))
     {
-        p.y=pad.position.y-r;
+        p.y=pad.position.y-r; // places the ball on the top side of the paddle
         new_speed.y *= -1;
 
         if(p.x<pad.position.x+3*pad.width/7) // if the ball touches the left part of the paddle
@@ -286,7 +336,8 @@ void render_area::reset()
     score->setText(QString::number(0));
     pad=pad_init;
     circ.center=circ_init;
-    speed=speed_init;
+    ball_speed=speed_init;
+    bonus_speed=speed_init;
     brick_wall=setBrickWall(first_brick);
     timer.stop();
     start=true;

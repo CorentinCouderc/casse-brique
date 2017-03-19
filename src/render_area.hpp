@@ -75,10 +75,11 @@ private: //attributes
     vec2 circ_init={350,340};
 
     /** The speed of the circle */
-    vec2 speed;
+    vec2 ball_speed;
     vec2 speed_init={0.0f,-35.0f};
 
     /** The bonus represented by a circle*/
+    vec2 bonus_speed;
     circle bonus_ball;
     //bonus_ball.radius=3;
 
@@ -92,10 +93,15 @@ private: //attributes
     /** Brick Wall */
     std::list<brick> brick_wall;
     std::list<brick>::iterator B;
+    /** List of bricks broken to display the bonus */
+    std::list<brick> broken_bricks;
 
     /** The paddle */
     paddle pad;
-    paddle pad_init=paddle({300,350},100,5);
+    paddle pad_init=paddle({300,350},100,10);
+
+    /** The Bonus */
+    Bonus bonus;
 
     /** A vector of previous position when the circle is grabbed */
     std::list<vec2> stored_motion;
@@ -109,7 +115,7 @@ private: //attributes
     /** Time accessor */
     QTime time;
 
-    // true if it's the beginnig of the game
+    // true if it is the beginnig of the game
     bool start=true;
 
     bool bonus_enabled=true;

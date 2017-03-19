@@ -18,8 +18,6 @@ struct brick
     int width;
     /** height */
     int height;
-    /** toughness */
-    int breaking_number;
     /** state */
     bool is_broken;
     /** bonus */
@@ -35,14 +33,8 @@ struct brick
 
 /** Construct a vector of bricks from the first brick*/
 std::list<brick> setBrickWall(brick first_brick);
-/** Check if the brick is in contact with the ball */
-bool detect_contact();
-/** Decrease the breaking_number of the brick if hit by the ball */
-int decrement_breaking_number();
-/** Check if the brick is broken */
-bool is_brick_broken();
-
-
+/** Return an aleat bonus from enum Bonus, with more weigh to 'none' */
+Bonus aleatBonus(int aleat_number);
 
 
 #endif

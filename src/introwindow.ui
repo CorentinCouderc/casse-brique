@@ -64,7 +64,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#3a3a3a;&quot;&gt;- Use your paddles and the ball to bust all the bricks!&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#3a3a3a;&quot;&gt;- Don't let the ball go past your paddle!&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#3a3a3a;&quot;&gt;- Break all the bricks to win!&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#3a3a3a;&quot;&gt;- Use your paddle and the ball to bust all the bricks!&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#3a3a3a;&quot;&gt;- Don't let the ball past through your paddle!&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; color:#3a3a3a;&quot;&gt;- Break all the bricks to win!&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
     <property name="wordWrap">
      <bool>true</bool>
@@ -100,14 +100,14 @@
      </rect>
     </property>
     <property name="text">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;- Use 'space' on your keyboard to launch the ball&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;- Use your mouse to move the paddle&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;- Left Click to launch the ball&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;- Use your mouse to move the paddle&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
    <widget class="QLabel" name="start_label">
     <property name="geometry">
      <rect>
-      <x>760</x>
-      <y>100</y>
+      <x>670</x>
+      <y>160</y>
       <width>301</width>
       <height>31</height>
      </rect>
@@ -126,10 +126,10 @@
    <widget class="QPushButton" name="start_push_button">
     <property name="geometry">
      <rect>
-      <x>780</x>
-      <y>160</y>
-      <width>161</width>
-      <height>361</height>
+      <x>630</x>
+      <y>220</y>
+      <width>281</width>
+      <height>191</height>
      </rect>
     </property>
     <property name="font">
@@ -163,7 +163,7 @@
      <x>0</x>
      <y>0</y>
      <width>993</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>
