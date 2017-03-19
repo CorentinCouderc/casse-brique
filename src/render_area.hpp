@@ -56,6 +56,9 @@ private: //functions
     /** Move forward in time */
     void numerical_integration();
 
+    /** detect Ball/Brick collison */
+    bool isBallBrickCollison(std::list<brick>::iterator B,float ballLeft, float ballRight, float ballTop, float ballBottom);
+
 private: //attributes
 
     /** Damping coefficient */

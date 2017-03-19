@@ -187,8 +187,6 @@ vec2 render_area::collision_handling(vec2& p)
     //collision with the top wall
     if(p.y-r<0)
     {
-        if(new_speed.x==0.0) new_speed.x=-25.0;
-
         p.y=r;
         new_speed.y *= -1;
         collision=true;
@@ -207,62 +205,34 @@ vec2 render_area::collision_handling(vec2& p)
 
     for (B=brick_wall.begin();B!=brick_wall.end();B++)
     {
-        if( p.x >=B->position.x-5 && p.x <= B->position.x+B->width+5 )
+        //will the ball hit the left or right part of the brick?
+        if( isBallBrickCollison(B,p.x-r+dt*new_speed.x,p.x+r+dt*new_speed.x,p.y-r,p.y+r))
         {
-            //collision with the bottom of the brick
-            if(p.y-r <= B->position.y+B->height && p.y>B->position.y+B->height)
-            {
-                std::cout<<"bas"<<std::endl;
+            new_speed.x *= -1;
+            B->is_broken=true;
+            collision_brick = true;
 
-                if(new_speed.x==0.0) new_speed.x=25.0;
-                p.y=B->position.y+B->height+r;
-                new_speed.y *= -1;
-                B->is_broken = true;
-                collision_brick = true;
-
-            }
-            //collision with the top of the brick
-            else if(p.y+r >= B->position.y && p.y<B->position.y)
-            {
-                p.y=B->position.y-r;
-                new_speed.y *= -1;
-                B->is_broken = true;
-                collision_brick = true;
-                std::cout<<"haut"<<std::endl;
-            }
         }
 
-        if((p.y> B->position.y && p.y < B->position.y+B->height))
+        //will the ball hit the top or bottom part of the brick?
+        if( isBallBrickCollison(B,p.x-r,p.x+r,p.y-r+dt*new_speed.y,p.y+r+dt*new_speed.y) )
         {
-            //collision with the left of the brick
-            if(p.x+r > B->position.x && p.x<B->position.x+B->width)
-            {
-                p.x=B->position.x-r;
-                new_speed.x *= -1;
-                B->is_broken = true;
-                collision_brick = true;
-                std::cout<<"gauche"<<std::endl;
-            }
+            if(new_speed.x==0) new_speed.x=25.0f;
 
-            //collision with the right of the brick
-            else if(p.x-r < B->position.x+B->width && p.x>B->position.x)
-            {
-                p.x=B->position.x+B->width+r;
-                new_speed.x *= -1;
-                B->is_broken = true;
-                collision_brick = true;
-                std::cout<<"droite"<<std::endl;
-            }
+            new_speed.y *= -1;
+            B->is_broken=true;
+            collision_brick = true;
+
         }
-
-    }
-
-    for (B=brick_wall.begin();B!=brick_wall.end();B++)
-    {
         if (B->is_broken)
-            brick_wall.erase(B);
+                {
+                    brick_wall.erase(B);
+                    break;
+                }
+
 
     }
+
 
     //collision with the paddle
     if(p.y+r>(pad.position.y) && p.y<height() && p.x<(pad.position.x+pad.width) && p.x>(pad.position.x))
@@ -296,6 +266,14 @@ vec2 render_area::collision_handling(vec2& p)
 
     return new_speed;
 
+}
+
+bool render_area::isBallBrickCollison(std::list<brick>::iterator B,float ballLeft, float ballRight, float ballTop, float ballBottom) {
+
+  return ballRight > B->position.x &&
+         ballBottom > B->position.y &&
+         (B->position.x+B->width) > ballLeft &&
+         (B->position.y+B->height) > ballTop;
 }
 
 void render_area::setup_score(QLabel* score_value)
