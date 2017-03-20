@@ -101,8 +101,12 @@ void render_area::paintEvent(QPaintEvent*)
     if(score->text().toInt() >= 48)
         painter.drawText(280,210,200,100,1," You finished the level!\nClick Retry to play again!");
 
+    if(p.y > pad.position.y+pad.height)
+        painter.drawText(280,210,200,100,1," You lose!\nClick Retry to play again!");
+
     // Mouse detection
     this->setMouseTracking(true);
+
 }
 
 
@@ -113,11 +117,12 @@ void render_area::mouseMoveEvent(QMouseEvent *event)
     QPoint mousePosition = event->pos();
 
     if (mousePosition.x()>pad.width/2 && mousePosition.x()+pad.width/2<width())
+        {
         //translate the x coordonate of the paddle
         pad.position.x=mousePosition.x()-pad.width/2;
         if(start)
             circ.center.x=mousePosition.x();
-
+        }
     repaint();
 }
 
@@ -160,7 +165,7 @@ void render_area::update_timer()
 void render_area::numerical_integration()
 {
     //numerical integration using Forward Euler method
-    vec2 const gravity={0.0f,9.81f};
+    vec2 const gravity={0.0f,0.0f};
     //the ball
     vec2& p=circ.center;
     //the bonus
@@ -171,9 +176,8 @@ void render_area::numerical_integration()
             if (B->position.y < 400)
             {
                 vec2& p2=B->position;
-                bonus_speed = bonus_speed+dt*gravity; //integrate speed
-                bonus_speed -= dt*damping*ball_speed; //apply damping
-                p2      = p2+dt*bonus_speed/100;  //integrate position
+                bonus_speed = {0.0f,30.0f};
+                p2      = p2+dt*bonus_speed;  //integrate position
             }
         }
     }
@@ -186,6 +190,17 @@ void render_area::numerical_integration()
     }
     ball_speed -= dt*damping*ball_speed; //apply damping
     p      = p+dt*ball_speed;          //integrate position
+
+
+    // check if the bonus is finished
+    duree_bonus=time.elapsed();
+    if(duree_bonus>=15000 && bonus_enabled)
+    {
+        pad.width=pad_init.width;
+        if (ball_speed.y<0) ball_speed.y=speed_init.y;
+        else ball_speed.y=-speed_init.y;
+        bonus_enabled=false;
+    }
 
     //collision handling (set new position, and return a new speed value)
     ball_speed=collision_handling(p);
@@ -212,97 +227,111 @@ vec2 render_area::collision_handling(vec2& p)
 
     if( p.y+r<height() )
     {
-    //collision with the ground
-    if(p.y+r>h)
-    {
-        p.y=h+r;
-        collision=true;
-    }
-    //collision with the left wall
-    if(p.x-r<0)
-    {
-        p.x=r;
-        new_speed.x *= -1;
-        collision=true;
-        collision_wall=true;
-    }
-    //collision with the right wall
-    if(p.x+r>w)
-    {
-        p.x=w-r;
-        new_speed.x *= -1;
-        collision=true;
-        collision_wall=true;
-    }
-    //collision with the top wall
-    if(p.y-r<0)
-    {
-        p.y=r;
-        new_speed.y *= -1;
-        collision=true;
-        collision_wall=true;
-        vec2 pre_bonus_speed=new_speed; // save of speed value before bonus
-        paddle pre_bonus_pad=pad; // save of pad parameters before bonus
-        if(bonus_enabled)
-            selectBonus(&pad,&new_speed,first_brick.bonus);
-        bonus_enabled=false;
-        /*wait(1000);
-        new_speed=pre_bonus_speed;
-        pad=pre_bonus_pad;*/
-    }
-
-    //collision with the bricks
-
-    for (B=brick_wall.begin();B!=brick_wall.end();B++)
-    {
-        //will the ball hit the left or right part of the brick?
-        if( isBallBrickCollison(B,p.x-r+dt*new_speed.x,p.x+r+dt*new_speed.x,p.y-r,p.y+r))
+        //collision with the ground
+        if(p.y+r>h)
         {
+            p.y=h+r;
+            collision=true;
+        }
+        //collision with the left wall
+        if(p.x-r<0)
+        {
+            p.x=r;
             new_speed.x *= -1;
-            B->is_broken=true;
-            collision_brick = true;
-
+            collision=true;
+            collision_wall=true;
         }
-
-        //will the ball hit the top or bottom part of the brick?
-        if( isBallBrickCollison(B,p.x-r,p.x+r,p.y-r+dt*new_speed.y,p.y+r+dt*new_speed.y) )
+        //collision with the right wall
+        if(p.x+r>w)
         {
-            if(new_speed.x==0) new_speed.x=25.0f;
-
-            new_speed.y *= -1;
-            B->is_broken=true;
-            collision_brick = true;
-
+            p.x=w-r;
+            new_speed.x *= -1;
+            collision=true;
+            collision_wall=true;
         }
-        if (B->is_broken)  //if the brick is broken it is withdrawn from the list
+        //collision with the top wall
+        if(p.y-r<0)
+        {
+            p.y=r;
+            new_speed.y *= -1;
+            collision=true;
+            collision_wall=true;
+        }
+
+        //collision with the bricks
+
+        for (B=brick_wall.begin();B!=brick_wall.end();B++)
+        {
+            //will the ball hit the left or right part of the brick?
+            if( isBallBrickCollison(B,p.x-r+dt*new_speed.x,p.x+r+dt*new_speed.x,p.y-r,p.y+r))
             {
-                broken_bricks.push_back(*B);
-                brick_wall.erase(B);
-                break;
+                new_speed.x *= -1;
+                B->is_broken=true;
+                collision_brick = true;
+
             }
 
-    }
+            //will the ball hit the top or bottom part of the brick?
+            if( isBallBrickCollison(B,p.x-r,p.x+r,p.y-r+dt*new_speed.y,p.y+r+dt*new_speed.y) )
+            {
+                if(new_speed.x==0) new_speed.x=25.0f;
 
+                new_speed.y *= -1;
+                B->is_broken=true;
+                collision_brick = true;
 
-    //collision with the paddle
-    if(p.y+r>(pad.position.y) && p.y<height() && p.x<(pad.position.x+pad.width) && p.x>(pad.position.x))
-    {
-        p.y=pad.position.y-r; // places the ball on the top side of the paddle
-        new_speed.y *= -1;
+            }
+            if (B->is_broken)  //if the brick is broken it is withdrawn from the list
+                {
+                    broken_bricks.push_back(*B);
+                    brick_wall.erase(B);
+                    break;
+                }
 
-        if(p.x<pad.position.x+3*pad.width/7) // if the ball touches the left part of the paddle
-          {
-            if (new_speed.x>0) // and comes from the left, it returns left
-                new_speed.x*=-1;
-          }
-        else if(p.x>pad.position.x+5*pad.width/7) // if the ball touches the right part of the paddle
-        {
-          if (new_speed.x<0) // and comes from the right, it returns right
-              new_speed.x*=-1;
         }
 
-        collision=true;
-    }
+        // Collison Bonus/Pad
+        for (B=broken_bricks.begin();B!=broken_bricks.end();B++)
+        {
+           if(B->is_broken && B->bonus != none)// if no bonus, no display
+           {
+               pre_bonus_speed=new_speed;
+               if(     B->position.y>(pad.position.y) &&
+                       B->position.y<height() &&
+                       B->position.x<(pad.position.x+pad.width) &&
+                       B->position.x>(pad.position.x) )
+                {
+
+                   selectBonus(&pad,&new_speed,B->bonus);
+                   bonus_enabled=true;
+                   if (time.isNull()) time.start();
+                   else time.restart();
+                   broken_bricks.erase(B);
+                }
+           }
+
+        }
+
+
+        //collision with the paddle
+        if(p.y+r>(pad.position.y) && p.y<height() && p.x<(pad.position.x+pad.width) && p.x>(pad.position.x))
+        {
+            p.y=pad.position.y-r; // places the ball on the top side of the paddle
+            new_speed.y *= -1;
+
+            if(p.x<pad.position.x+3*pad.width/7) // if the ball touches the left part of the paddle
+              {
+                if (new_speed.x>0) // and comes from the left, it returns left
+                    new_speed.x*=-1;
+              }
+            else if(p.x>pad.position.x+5*pad.width/7) // if the ball touches the right part of the paddle
+            {
+              if (new_speed.x<0) // and comes from the right, it returns right
+                  new_speed.x*=-1;
+            }
+
+            collision=true;
+        }
     }
 
     if(collision_brick && score!=nullptr)
@@ -341,7 +370,7 @@ void render_area::reset()
     brick_wall=setBrickWall(first_brick);
     timer.stop();
     start=true;
-    bonus_enabled=true;
+    bonus_enabled=false;
 
     repaint();
 }

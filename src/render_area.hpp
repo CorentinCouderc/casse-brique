@@ -80,9 +80,9 @@ private: //attributes
 
     /** The bonus represented by a circle*/
     vec2 bonus_speed;
-    circle bonus_ball;
-    //bonus_ball.radius=3;
-
+    int duree_bonus;
+    paddle pre_bonus_pad;
+    vec2 pre_bonus_speed;
 
 
     /** The time integration step */
@@ -118,7 +118,7 @@ private: //attributes
     // true if it is the beginnig of the game
     bool start=true;
 
-    bool bonus_enabled=true;
+    bool bonus_enabled=false;
 
 };
 
