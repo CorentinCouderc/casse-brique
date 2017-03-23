@@ -24,7 +24,8 @@ render_area::render_area(QWidget *parent)
       stored_motion(),
       stored_time(),
       timer(),
-      time()
+      time(),
+      alpha(1.0)
 {
     setBackgroundRole(QPalette::Base);
     setAutoFillBackground(true);
@@ -53,10 +54,12 @@ void render_area::paintEvent(QPaintEvent*)
     //the actual drawing of the bricks
     brush.setColor(QColor(255,91,40,255));
     painter.setBrush(brush);
+
     for (B=brick_wall.begin();B!=brick_wall.end();B++)
     {
         if(!(B->is_broken))
             painter.drawRect(B->position.x,B->position.y,B->width,B->height);
+
     }
 
     //the actual drawing of the bonus
@@ -138,21 +141,6 @@ void render_area::mousePressEvent(QMouseEvent *event)
     }
 }
 
-void render_area::store_values(vec2 const& click)
-{
-    int const N_last_position = 5;
-
-    assert(N_last_position>1);
-
-    //store at most the N last position and time of the circle
-    stored_motion.push_back(click);
-    if( stored_motion.size()>N_last_position )
-        stored_motion.pop_front();
-
-    stored_time.push_back(time.elapsed());
-    if( stored_time.size()>N_last_position )
-        stored_time.pop_front();
-}
 
 void render_area::update_timer()
 {
@@ -165,7 +153,7 @@ void render_area::update_timer()
 void render_area::numerical_integration()
 {
     //numerical integration using Forward Euler method
-    vec2 const gravity={0.0f,0.0f};
+
     //the ball
     vec2& p=circ.center;
     //the bonus
@@ -188,8 +176,8 @@ void render_area::numerical_integration()
         circ.center.x = pad.position.x+pad.width/2;
         circ.center.y = pad.position.y+pad.height/2;
     }
-    ball_speed -= dt*damping*ball_speed; //apply damping
-    p      = p+dt*ball_speed;          //integrate position
+
+    p      = p+alpha*dt*ball_speed;          //integrate ball position
 
 
     // check if the bonus is finished
@@ -197,8 +185,7 @@ void render_area::numerical_integration()
     if(duree_bonus>=15000 && bonus_enabled)
     {
         pad.width=pad_init.width;
-        if (ball_speed.y<0) ball_speed.y=speed_init.y;
-        else ball_speed.y=-speed_init.y;
+        alpha=1.0f;
         bonus_enabled=false;
     }
 
@@ -219,11 +206,7 @@ vec2 render_area::collision_handling(vec2& p)
     float const r=circ.radius;
 
     //special condition in cases of collision
-    bool collision=false;
-    bool collision_wall=false;
     bool collision_brick=false;
-
-
 
     if( p.y+r<height() )
     {
@@ -231,31 +214,24 @@ vec2 render_area::collision_handling(vec2& p)
         if(p.y+r>h)
         {
             p.y=h+r;
-            collision=true;
         }
         //collision with the left wall
         if(p.x-r<0)
         {
             p.x=r;
             new_speed.x *= -1;
-            collision=true;
-            collision_wall=true;
         }
         //collision with the right wall
         if(p.x+r>w)
         {
             p.x=w-r;
             new_speed.x *= -1;
-            collision=true;
-            collision_wall=true;
         }
         //collision with the top wall
         if(p.y-r<0)
         {
             p.y=r;
             new_speed.y *= -1;
-            collision=true;
-            collision_wall=true;
         }
 
         //collision with the bricks
@@ -295,18 +271,18 @@ vec2 render_area::collision_handling(vec2& p)
         {
            if(B->is_broken && B->bonus != none)// if no bonus, no display
            {
-               pre_bonus_speed=new_speed;
                if(     B->position.y>(pad.position.y) &&
                        B->position.y<height() &&
                        B->position.x<(pad.position.x+pad.width) &&
                        B->position.x>(pad.position.x) )
                 {
-
-                   selectBonus(&pad,&new_speed,B->bonus);
+                   selectBonus(&pad,&alpha,B->bonus);
                    bonus_enabled=true;
-                   if (time.isNull()) time.start();
-                   else time.restart();
-                   broken_bricks.erase(B);
+                   B->bonus=none; // no display
+                   if (time.isNull())
+                       time.start();
+                   else
+                       time.restart();
                 }
            }
 
@@ -330,7 +306,6 @@ vec2 render_area::collision_handling(vec2& p)
                   new_speed.x*=-1;
             }
 
-            collision=true;
         }
     }
 
@@ -365,8 +340,7 @@ void render_area::reset()
     score->setText(QString::number(0));
     pad=pad_init;
     circ.center=circ_init;
-    ball_speed=speed_init;
-    bonus_speed=speed_init;
+    alpha=1.0f;
     brick_wall=setBrickWall(first_brick);
     timer.stop();
     start=true;

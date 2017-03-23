@@ -10,13 +10,13 @@
 enum Bonus { none, largerPad, shorterPad, slowerBall, fasterBall };
 
 /*select the object affected by the bonus*/
-void selectBonus(paddle *pad,vec2 *speed, Bonus bonus);
+void selectBonus(paddle *pad,float *alpha, Bonus bonus);
 
 /* apply the bonus to the pad*/
 void applyBonus(paddle *pad,Bonus bonus);
 
 /* apply the bonus to the ball*/
-void applyBonus(vec2 *speed,Bonus bonus);
+void applyBonus(float *alpha,Bonus bonus);
 
 
 #endif // BONUS_H

@@ -29,6 +29,8 @@ public:
 
     /** Pass the pointer of the label for the score */
     void setup_score(QLabel* score_param);
+
+    /** Action of the Retry button*/
     void reset();
 
 protected:
@@ -46,9 +48,6 @@ private slots:
     void update_timer();
 
 private: //functions
-
-    /** Insert current position and time inside the recording structures */
-    void store_values(vec2 const& click);
 
     /** Deal with collision */
     vec2 collision_handling(vec2& p);
@@ -81,8 +80,6 @@ private: //attributes
     /** The bonus represented by a circle*/
     vec2 bonus_speed;
     int duree_bonus;
-    paddle pre_bonus_pad;
-    vec2 pre_bonus_speed;
 
 
     /** The time integration step */
@@ -108,8 +105,6 @@ private: //attributes
     /** A vector of previous time when the circle is grabbed */
     std::list<int> stored_time;
 
-
-
     /** Timer for periodic time iteration */
     QTimer timer;
     /** Time accessor */
@@ -118,7 +113,11 @@ private: //attributes
     // true if it is the beginnig of the game
     bool start=true;
 
+    // true if the bonus is enabled
     bool bonus_enabled=false;
+
+    // speed weighting coefficient
+    float alpha;
 
 };
 

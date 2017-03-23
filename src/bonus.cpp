@@ -1,26 +1,24 @@
 #include "bonus.hpp"
 
 
-void selectBonus(paddle *pad,vec2 *speed, Bonus bonus)
+void selectBonus(paddle *pad,float* alpha, Bonus bonus)
 {
     if (bonus==fasterBall||bonus==slowerBall)
-        applyBonus(speed,bonus);
+        applyBonus(alpha,bonus);
     else
         applyBonus(pad,bonus);
 }
 
-void applyBonus(vec2 *speed, Bonus bonus)
+void applyBonus(float* alpha, Bonus bonus)
 {
-    if(bonus==fasterBall)
+    if(bonus==fasterBall && *alpha==1.0f)
     {
-       if (speed->y >0) speed->y=60.0f;
-       else speed->y=-60.0f;
+      *alpha = 1.5f;
     }
 
-    if(bonus==slowerBall)
+    if(bonus==slowerBall && *alpha==1.0f)
     {
-        if (speed->y >0) speed->y=15.0f;
-        else speed->y=-15.0f;
+        *alpha = 0.5f;
     }
 }
 
