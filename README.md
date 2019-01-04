@@ -1,4 +1,5 @@
 # casse-brique
-School project
+School project in 4th year of engineering school
 
-Write in C++ with Qt library to make a small game
+Objectives : 
+Use Qt and C++ to make a small brick breaker game
